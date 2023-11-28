@@ -2,11 +2,11 @@ package totechs.socialnetwork.Infrastructure.BaseRepository
 
 import totechs.socialnetwork.Core.Application.IDatabaseEntityWithId
 import totechs.socialnetwork.Core.Application.IDomainEntityWithId
-import totechs.socialnetwork.Core.Application.IRepository
-import java.time.LocalDate
+import totechs.socialnetwork.Core.Application.Contract.BaseContract.IDatabaseRepositoryBase
 
 
-public abstract class RepositoryBaseWithId<TDomainEntity, TId, TDatabaseEntity, TDbId>: IRepository<TDomainEntity, TId>
+public abstract class DatabaseRepositoryBaseWithId<TDomainEntity, TId, TDatabaseEntity, TDbId>:
+    IDatabaseRepositoryBase<TDomainEntity, TId>
 where TDomainEntity : IDomainEntityWithId<TId>,
       TDatabaseEntity : IDatabaseEntityWithId<TDbId>
 {

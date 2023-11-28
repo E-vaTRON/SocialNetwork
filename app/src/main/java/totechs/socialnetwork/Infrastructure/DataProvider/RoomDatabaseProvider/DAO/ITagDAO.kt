@@ -1,26 +1,21 @@
 package totechs.socialnetwork.Infrastructure.DataProvider.RoomDatabaseProvider
 
 import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import totechs.socialnetwork.Core.Application.ITagRepository
+import totechs.socialnetwork.Core.Application.IDataAccessObjectBase
+import java.util.UUID
 
 //Data Access Object
 @Dao
-interface ITagDAO : ITagRepository<Tag>
+interface ITagDAO : IDataAccessObjectBase<Tag>
 {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    override fun Insert(tag: Tag)
-
-    @Delete
-    override fun Delete(tag: Tag)
+    @Query("DELETE FROM Tag WHERE Id = :id")
+    suspend fun DeleteById(id: UUID)
 
     @Query("SELECT * FROM Tag")
-    override fun GetAll(): Flow<List<Tag>>
+    fun FindAll(): Flow<List<Tag>>
 
-    @Query("SELECT * FROM Tag WHERE Id=:Id")
-    override fun GetById(Id: String): Tag?
+    @Query("SELECT * FROM Tag WHERE id = :id LIMIT 1")
+    fun FindById(id: Int): Flow<Tag>
 }
