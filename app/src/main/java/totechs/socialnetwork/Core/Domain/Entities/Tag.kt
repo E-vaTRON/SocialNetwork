@@ -10,3 +10,6 @@ data class Tag(
     val Name: String,
     val HexColor: String
 ): EntityBase()
+{
+    constructor(): this ("", false, LocalDateTime.now(), LocalDateTime.now(), "", "",)
+}

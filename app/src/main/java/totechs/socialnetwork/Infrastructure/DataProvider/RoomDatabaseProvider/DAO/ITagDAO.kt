@@ -8,7 +8,7 @@ import java.util.UUID
 
 //Data Access Object
 @Dao
-interface ITagDAO : IDataAccessObjectBase<Tag>
+interface ITagDAO : IDataAccessObjectBase<Tag, UUID>
 {
     @Query("DELETE FROM Tag WHERE Id = :id")
     suspend fun DeleteById(id: UUID)

@@ -1,141 +1,111 @@
 package totechs.socialnetwork.Infrastructure.DataProvider.RoomDatabaseProvider
 
-import dev.krud.shapeshift.ShapeShift
-import dev.krud.shapeshift.ShapeShiftBuilder
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import totechs.socialnetwork.Core.Application.IBlogRepository
+import totechs.socialnetwork.Core.Application.IObjectMapper
+import totechs.socialnetwork.Core.Application.Services.IDAOMapper
+import totechs.socialnetwork.Core.Blog
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
-
-typealias DomainBlog = totechs.socialnetwork.Core.Blog
-typealias DatabaseBlog = Blog
 
 class BlogRepository : IBlogRepository
 {
-    lateinit var mapperBuilder : ShapeShiftBuilder
-    lateinit var mapper : ShapeShift
-    lateinit var DataContext : SqliteDataConext
+    var DataContext : SqliteDataConext
+    var ObjectMapper : IObjectMapper
 
-    val MapToDatabase = mapperBuilder.withMapping<DomainBlog, DatabaseBlog>
+    constructor(conext: SqliteDataConext,
+                objectMapper : IObjectMapper)
     {
-        DomainBlog::Id mappedTo DatabaseBlog::Id
-        DomainBlog::Deleted mappedTo DatabaseBlog::Deleted
-        DomainBlog::CreatedOn mappedTo DatabaseBlog::CreatedOn
-        DomainBlog::LastUpdatedOn mappedTo DatabaseBlog::LastUpdatedOn
-        DomainBlog::Title mappedTo DatabaseBlog::Title
-        DomainBlog::Description mappedTo DatabaseBlog::Description
-        DomainBlog::ImageUrl mappedTo DatabaseBlog::ImageUrl
-        DomainBlog::Deleted mappedTo DatabaseBlog::Deleted
+        DataContext = conext
+        ObjectMapper = objectMapper
     }
 
-    val MapToDomain = mapperBuilder.withMapping<DatabaseBlog, DomainBlog>
+    override suspend fun FindAllAsync(predicate: ((Blog) -> Boolean)?,coroutineContext: CoroutineContext)
+        : List<Blog>
     {
-        DatabaseBlog::Id mappedTo DomainBlog::Id
-        DatabaseBlog::Deleted mappedTo DomainBlog::Deleted
-        DatabaseBlog::CreatedOn mappedTo DomainBlog::CreatedOn
-        DatabaseBlog::LastUpdatedOn mappedTo DomainBlog::LastUpdatedOn
-        DatabaseBlog::Title mappedTo DomainBlog::Title
-        DatabaseBlog::Description mappedTo DomainBlog::Description
-        DatabaseBlog::ImageUrl mappedTo DomainBlog::ImageUrl
-        DatabaseBlog::Deleted mappedTo DomainBlog::Deleted
+        TODO("Not yet implemented")
     }
 
-//    override fun Insert(blog: DomainBlog)
-//    {
-//        mapper = MapToDatabase.build()
-//        DataContext.BlogDAO().Insert(mapper.map<DomainBlog, DatabaseBlog>(blog))
-//    }
-//
-//    override fun Delete(blog: DomainBlog)
-//    {
-//        mapper = MapToDatabase.build()
-//        DataContext.BlogDAO().Delete(mapper.map<DomainBlog, DatabaseBlog>(blog))
-//    }
-//
-//    override fun GetAll(): Flow<List<DomainBlog>>
-//    {
+    override suspend fun FindByIdAsync(id: String, coroutineContext: CoroutineContext)
+        : Blog?
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun AddAsync(entity: Blog, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun AddRangeAsync(entities: List<Blog>, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun AddRangeAsync(vararg entities: Blog, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun UpdateAsync(entity: Blog, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun DeleteAsync(entity: Blog, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun DeleteByIdAsync(id: String, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun DeleteRangeAsync(entities: List<Blog>, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun DeleteRangeAsync( vararg entities: Blog, coroutineContext: CoroutineContext)
+    {
+        TODO("Not yet implemented")
+    }
+
+
+//    override suspend fun FindAllAsync(predicate: ((DomainBlog) -> Boolean)?,
+//                                      coroutineContext: CoroutineContext): List<DomainBlog>
+//    = coroutineScope {
 //        mapper = MapToDomain.build()
-//        return DataContext.BlogDAO().GetAll().map()
-//        { blogs ->
-//            blogs.map()
-//            {
-//                mapper.map<DatabaseBlog, DomainBlog>(it)
+//
+//        val blogs = async(Dispatchers.IO) { DataContext.BlogDAO().FindAll() }.await()
+//
+//        val result = if (predicate != null) {
+//            blogs.filter { predicate.invoke(mapper.map(it)) }
+//        } else { blogs }
+//
+//        mapper.map(result)
+//    }
+
+//    override suspend fun AddAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
+//    {
+//        coroutineScope {
+//            launch(coroutineContext) {
+//                val dbEntity = ObjectMapper.MapDomainToDatabase(entity) as DatabaseBlog
+//                val check = async(Dispatchers.IO)
+//                {
+//                    Dao.Add(dbEntity)
+//                }.await()
+//                if (check != null)
+//                {
+//                    val hello = "added error"
+//                }
 //            }
 //        }
 //    }
-//
-//    override fun GetById(Id: String): DomainBlog?
-//    {
-//        mapper = MapToDomain.build()
-//        return DataContext.BlogDAO().GetById(Id)?.let()
-//               { mapper.map<DatabaseBlog, DomainBlog>(it) }
-//    }
 
-    override suspend fun FindAllAsync(
-        predicate: ((totechs.socialnetwork.Core.Blog) -> Boolean)?,
-        coroutineContext: CoroutineContext
-    ): Flow<List<totechs.socialnetwork.Core.Blog>> {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun FindByIdAsync(
-        id: String,
-        coroutineContext: CoroutineContext,
-        isQuickFind: Boolean
-    ): totechs.socialnetwork.Core.Blog? {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun AddAsync(
-        entity: totechs.socialnetwork.Core.Blog,
-        coroutineContext: CoroutineContext
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun AddRangeAsync(
-        entities: List<totechs.socialnetwork.Core.Blog>,
-        coroutineContext: CoroutineContext
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun AddRangeAsync(
-        coroutineContext: CoroutineContext,
-        vararg entities: totechs.socialnetwork.Core.Blog
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun UpdateAsync(
-        entity: totechs.socialnetwork.Core.Blog,
-        coroutineContext: CoroutineContext
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun DeleteAsync(
-        entity: totechs.socialnetwork.Core.Blog,
-        coroutineContext: CoroutineContext
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun DeleteByIdAsync(id: String, coroutineContext: CoroutineContext) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun DeleteRangeAsync(
-        entities: List<totechs.socialnetwork.Core.Blog>,
-        coroutineContext: CoroutineContext
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun DeleteRangeAsync(
-        coroutineContext: CoroutineContext,
-        vararg entities: totechs.socialnetwork.Core.Blog
-    ) {
-        TODO("Not yet implemented")
-    }
 }

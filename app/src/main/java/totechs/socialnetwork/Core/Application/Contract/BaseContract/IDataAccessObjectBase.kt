@@ -6,26 +6,27 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow
-import totechs.socialnetwork.Infrastructure.DataProvider.RoomDatabaseProvider.Blog
+
 
 @Dao
-interface IDataAccessObjectBase<TDatabaseEntity>
-        where TDatabaseEntity : IDatabaseEntity
+interface IDataAccessObjectBase<TDatabaseEntity, TDbId>
+        where TDatabaseEntity : IDatabaseEntityWithId<TDbId>
 {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun Add(vararg obj: TDatabaseEntity)
+//    @Query("SELECT * FROM EntityBase")
+//    fun FindAll(): List<TDatabaseEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun AddRange(obj: List<TDatabaseEntity>)
+    suspend fun Add(vararg entity: TDatabaseEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun AddRange(entities: List<out TDatabaseEntity>)
 
     @Update
-    suspend fun Update(obj: TDatabaseEntity)
+    suspend fun Update(entity: TDatabaseEntity)
 
     @Delete
-    suspend fun Delete(obj: TDatabaseEntity)
+    suspend fun Delete(entity: TDatabaseEntity)
 
     @Delete
-    suspend fun DeleteRange(vararg obj: TDatabaseEntity)
-
+    suspend fun DeleteRange(vararg entity: TDatabaseEntity)
 }

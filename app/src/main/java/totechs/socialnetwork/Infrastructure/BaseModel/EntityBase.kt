@@ -1,10 +1,12 @@
 package totechs.socialnetwork.Infrastructure
 
+import androidx.room.Entity
 import totechs.socialnetwork.Core.Application.IDatabaseHasCreatedOn
 import totechs.socialnetwork.Core.Application.IDatabaseHasLastUpdatedOn
 import java.time.LocalDateTime
 import java.util.UUID
 
+@Entity
 open class EntityBase : EntityWithId<UUID>(), IDatabaseHasCreatedOn, IDatabaseHasLastUpdatedOn {
     override var Id: UUID = UUID.randomUUID()
     override var CreatedOn: LocalDateTime? = LocalDateTime.now()

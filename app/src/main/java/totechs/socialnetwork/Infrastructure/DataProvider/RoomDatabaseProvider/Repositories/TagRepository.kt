@@ -10,14 +10,13 @@ class TagRepository: ITagRepository
     override suspend fun FindAllAsync(
         predicate: ((Tag) -> Boolean)?,
         coroutineContext: CoroutineContext
-    ): Flow<List<Tag>> {
+    ): List<Tag> {
         TODO("Not yet implemented")
     }
 
     override suspend fun FindByIdAsync(
         id: String,
         coroutineContext: CoroutineContext,
-        isQuickFind: Boolean
     ): Tag? {
         TODO("Not yet implemented")
     }
@@ -30,7 +29,7 @@ class TagRepository: ITagRepository
         TODO("Not yet implemented")
     }
 
-    override suspend fun AddRangeAsync(coroutineContext: CoroutineContext, vararg entities: Tag) {
+    override suspend fun AddRangeAsync(vararg entities: Tag, coroutineContext: CoroutineContext) {
         TODO("Not yet implemented")
     }
 
@@ -51,8 +50,8 @@ class TagRepository: ITagRepository
     }
 
     override suspend fun DeleteRangeAsync(
-        coroutineContext: CoroutineContext,
-        vararg entities: Tag
+        vararg entities: Tag,
+        coroutineContext: CoroutineContext
     ) {
         TODO("Not yet implemented")
     }

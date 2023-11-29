@@ -132,6 +132,9 @@ dependencies {
     kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
+    //Async Await
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+
     //Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")

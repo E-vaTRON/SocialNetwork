@@ -81,7 +81,7 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun JetpackComposeCleanArchitectureTheme(darkTheme: Boolean = isSystemInDarkTheme(),
+fun TotechsSocialNetworkTheme(darkTheme: Boolean = isSystemInDarkTheme(),
                                          dynamicColor: Boolean = true,
                                          content: @Composable() () -> Unit)
 {

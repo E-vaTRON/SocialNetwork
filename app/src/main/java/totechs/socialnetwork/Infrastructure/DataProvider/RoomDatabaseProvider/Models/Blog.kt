@@ -20,6 +20,9 @@ data class Blog(
     val Description: String,
     val ImageUrl: String,
 ) : EntityBase()
+{
+    constructor(): this(UUID.randomUUID(), false, LocalDateTime.now(), LocalDateTime.now(), "", "", "")
+}
 
 data class BlogWithTags(
     @Embedded val blog: Blog,

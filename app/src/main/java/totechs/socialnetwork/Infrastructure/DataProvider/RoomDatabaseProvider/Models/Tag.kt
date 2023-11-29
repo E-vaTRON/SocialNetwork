@@ -16,3 +16,6 @@ data class Tag(
     val Name: String,
     val HexColor: String
 ): EntityBase()
+{
+    constructor(): this(UUID.randomUUID(), false, LocalDateTime.now(), LocalDateTime.now(), "", "")
+}
