@@ -7,9 +7,7 @@ data class Tag(
     override var Deleted: Boolean,
     override var CreatedOn: LocalDateTime?,
     override var LastUpdatedOn: LocalDateTime?,
+    val BlogId: String,
     val Name: String,
     val HexColor: String
 ): EntityBase()
-{
-    constructor(): this ("", false, LocalDateTime.now(), LocalDateTime.now(), "", "",)
-}

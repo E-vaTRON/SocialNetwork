@@ -14,8 +14,5 @@ data class Blog(
     val Title: String,
     val Description: String,
     val ImageUrl: String,
-    val Tags: List<Tag>,
+    val Tags: MutableList<Tag>,
 ) : EntityBase()
-{
-    constructor(): this("", false, LocalDateTime.now(), LocalDateTime.now(), "", "", "", listOf())
-}

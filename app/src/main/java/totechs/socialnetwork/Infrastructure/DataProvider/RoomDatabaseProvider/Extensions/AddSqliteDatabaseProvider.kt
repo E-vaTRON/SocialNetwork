@@ -7,6 +7,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import totechs.socialnetwork.Core.Application.IBlogRepository
+import totechs.socialnetwork.Core.Application.IObjectMapper
+import totechs.socialnetwork.Core.Application.ITagRepository
 import javax.inject.Singleton
 
 @Module
@@ -14,8 +17,11 @@ import javax.inject.Singleton
 object AddSqliteDatabaseProvider
 {
     @Provides
+    fun AddObjectMapper(): IObjectMapper = ObjectMapper()
+
+    @Provides
     @Singleton
-    fun addSqliteDatabase(application: Application): SqliteDataConext
+    fun AddSqliteDatabase(application: Application): SqliteDataConext
     {
         return Room.databaseBuilder(context = application, klass = SqliteDataConext::class.java, name = "LocalDatabase")
             .addTypeConverter(TypeConvertor())
@@ -25,9 +31,23 @@ object AddSqliteDatabaseProvider
 
     @Provides
     @Singleton
-    fun addBlogRepository(sqliteDatabase: SqliteDataConext): IBlogDAO = sqliteDatabase.BlogDAO()
+    fun AddBlogDAO(sqliteDatabase: SqliteDataConext): IBlogDAO = sqliteDatabase.BlogDAO()
 
     @Provides
     @Singleton
-    fun addTagRepository(sqliteDatabase: SqliteDataConext): ITagDAO = sqliteDatabase.TagDAO()
+    fun AddTagDAO(sqliteDatabase: SqliteDataConext): ITagDAO = sqliteDatabase.TagDAO()
+
+    @Provides
+    @Singleton
+    fun AddBlogRepository(sqliteDatabase: SqliteDataConext, mapper: IObjectMapper): IBlogRepository
+    {
+        return BlogRepository(sqliteDatabase, mapper)
+    }
+
+    @Provides
+    @Singleton
+    fun AddTagRepository(sqliteDatabase: SqliteDataConext, mapper: IObjectMapper): ITagRepository
+    {
+        return TagRepository(sqliteDatabase, mapper)
+    }
 }

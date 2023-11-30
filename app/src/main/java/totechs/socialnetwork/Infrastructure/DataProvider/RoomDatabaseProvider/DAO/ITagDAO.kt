@@ -2,7 +2,6 @@ package totechs.socialnetwork.Infrastructure.DataProvider.RoomDatabaseProvider
 
 import androidx.room.Dao
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
 import totechs.socialnetwork.Core.Application.IDataAccessObjectBase
 import java.util.UUID
 
@@ -14,8 +13,11 @@ interface ITagDAO : IDataAccessObjectBase<Tag, UUID>
     suspend fun DeleteById(id: UUID)
 
     @Query("SELECT * FROM Tag")
-    fun FindAll(): Flow<List<Tag>>
+    fun FindAll(): List<Tag>
 
     @Query("SELECT * FROM Tag WHERE id = :id LIMIT 1")
-    fun FindById(id: Int): Flow<Tag>
+    fun FindById(id: UUID): Tag
+
+    @Query("SELECT * FROM Tag WHERE BlogId = :blogId")
+    fun GetTagsForBlog(blogId: UUID): List<Tag>
 }

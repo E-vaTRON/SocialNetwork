@@ -6,106 +6,216 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import totechs.socialnetwork.Core.Application.IBlogRepository
 import totechs.socialnetwork.Core.Application.IObjectMapper
-import totechs.socialnetwork.Core.Application.Services.IDAOMapper
-import totechs.socialnetwork.Core.Blog
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 class BlogRepository : IBlogRepository
 {
     var DataContext : SqliteDataConext
     var ObjectMapper : IObjectMapper
+    var DAO : IBlogDAO
 
     constructor(conext: SqliteDataConext,
                 objectMapper : IObjectMapper)
     {
         DataContext = conext
         ObjectMapper = objectMapper
+        DAO = DataContext.BlogDAO()
     }
 
-    override suspend fun FindAllAsync(predicate: ((Blog) -> Boolean)?,coroutineContext: CoroutineContext)
-        : List<Blog>
+    suspend fun InternalFindByIdAsync(id: String, coroutineContext: CoroutineContext)
+            : DatabaseBlog? = coroutineScope()
     {
-        TODO("Not yet implemented")
+        val entity = async(Dispatchers.IO)
+        {
+            DAO.FindById(ObjectMapper.MapStringToUUID(id))
+        }.await()
+        entity
+    }
+
+    override suspend fun FindAllAsync(predicate: ((DomainBlog) -> Boolean)?,coroutineContext: CoroutineContext)
+        : List<DomainBlog> = coroutineScope()
+    {
+        val dbEntities = async(Dispatchers.IO) { DAO.FindAll() }.await()
+        val entities = dbEntities.map { ObjectMapper.MapDatabaseToDomain(it) as DomainBlog }
+
+        val results = if (predicate != null) {
+            entities.filter { predicate.invoke(it) }
+        } else { entities }
+
+        results
     }
 
     override suspend fun FindByIdAsync(id: String, coroutineContext: CoroutineContext)
-        : Blog?
+        : DomainBlog?
     {
-        TODO("Not yet implemented")
+        val dbEntity = InternalFindByIdAsync(id, coroutineContext)
+        return if (dbEntity != null)
+            ObjectMapper.MapDatabaseToDomain(dbEntity) as DomainBlog
+        else null
     }
 
-    override suspend fun AddAsync(entity: Blog, coroutineContext: CoroutineContext)
+    override suspend fun AddAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                val dbEntity = ObjectMapper.MapDomainToDatabase(entity) as DatabaseBlog
+                async(Dispatchers.IO)
+                {
+                    DAO.Add(dbEntity)
+                }.await()
+            }
+        }
     }
 
-    override suspend fun AddRangeAsync(entities: List<Blog>, coroutineContext: CoroutineContext)
+    override suspend fun AddRangeAsync(entities: List<DomainBlog>, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                val dbEntities = entities.map()
+                {
+                    ObjectMapper.MapDomainToDatabase(it) as DatabaseBlog
+                }
+                async(Dispatchers.IO)
+                {
+                    DAO.AddRange(dbEntities)
+                }.await()
+            }
+        }
     }
 
-    override suspend fun AddRangeAsync(vararg entities: Blog, coroutineContext: CoroutineContext)
+    override suspend fun AddRangeAsync(vararg entities: DomainBlog, coroutineContext: CoroutineContext)
+        = AddRangeAsync(entities.toList(), coroutineContext)
+
+    override suspend fun UpdateAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                val dbEntity = async(Dispatchers.IO) {
+                    InternalFindByIdAsync(entity.Id, coroutineContext)
+                }.await()
+
+                if (dbEntity != null) {
+                    val updatedEntity = ObjectMapper.MapDomainToDatabase(entity) as DatabaseBlog
+                    async(Dispatchers.IO) {
+                        DAO.Update(updatedEntity)
+                    }.await()
+                } else {
+                    println("Entity with ID ${entity.Id} does not exist and cannot be updated.")
+                }
+            }
+        }
     }
 
-    override suspend fun UpdateAsync(entity: Blog, coroutineContext: CoroutineContext)
-    {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun DeleteAsync(entity: Blog, coroutineContext: CoroutineContext)
-    {
-        TODO("Not yet implemented")
-    }
+    override suspend fun DeleteAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
+        = DeleteByIdAsync(entity.Id, coroutineContext)
 
     override suspend fun DeleteByIdAsync(id: String, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                val dbEntity = async(Dispatchers.IO) {
+                    InternalFindByIdAsync(id, coroutineContext)
+                }.await()
+
+                if (dbEntity != null) {
+                    async(Dispatchers.IO) {
+                        DAO.DeleteById(ObjectMapper.MapStringToUUID(id))
+                    }.await()
+                } else {
+                    println("Entity with ID $id does not exist and cannot be deleted.")
+                }
+            }
+        }
     }
 
-    override suspend fun DeleteRangeAsync(entities: List<Blog>, coroutineContext: CoroutineContext)
+    override suspend fun DeleteRangeAsync(entities: List<DomainBlog>, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                entities.forEach { entity ->
+                    val foundEntity = InternalFindByIdAsync(entity.Id, coroutineContext)
+                    if (foundEntity == null) {
+                        println("Entity with ID ${entity.Id} does not exist and cannot be deleted.")
+                    }
+                }
+
+                val dbEntities = entities.map()
+                {
+                    ObjectMapper.MapDomainToDatabase(it) as DatabaseBlog
+                }
+                async(Dispatchers.IO) {
+                    DAO.DeleteRange(dbEntities)
+                }.await()
+            }
+        }
     }
 
-    override suspend fun DeleteRangeAsync( vararg entities: Blog, coroutineContext: CoroutineContext)
+    override suspend fun DeleteRangeAsync( vararg entities: DomainBlog, coroutineContext: CoroutineContext)
+        = DeleteRangeAsync(entities.toList(), coroutineContext)
+
+    suspend fun AddTagToBlogByIdAsync(blogId: String, tag: DomainTag, coroutineContext: CoroutineContext) {
+        coroutineScope {
+            launch(coroutineContext) {
+                // Convert the blog ID to a UUID
+                val id = ObjectMapper.MapStringToUUID(blogId)
+
+                // Find the blog
+                var dbBlog = async(Dispatchers.IO) {
+                    DataContext.BlogDAO().FindById(id)
+                }.await()
+
+                // If the blog exists, add the tag
+                if (dbBlog != null) {
+                    val blog = ObjectMapper.MapDatabaseToDomain(dbBlog) as DomainBlog
+                    blog.Tags.add(tag)
+                    dbBlog = ObjectMapper.MapDomainToDatabase(blog) as DatabaseBlog
+                    // Update the blog
+                    async(Dispatchers.IO) {
+                        DataContext.BlogDAO().Update(dbBlog)
+                    }.await()
+                } else {
+                    // Handle the case where the blog does not exist
+                    println("Blog with ID $blogId does not exist and cannot be updated.")
+                }
+            }
+        }
+    }
+
+    suspend fun UpdateBlogWithAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
     {
-        TODO("Not yet implemented")
+        coroutineScope {
+            launch(coroutineContext) {
+                val dbEntity = async(Dispatchers.IO) {
+                    InternalFindByIdAsync(entity.Id, coroutineContext)
+                }.await()
+
+                if (dbEntity != null) {
+                    val updatedEntity = ObjectMapper.MapDomainToDatabase(entity) as DatabaseBlog
+                    async(Dispatchers.IO) {
+                        DAO.Update(updatedEntity)
+                        val currentTags = DataContext.TagDAO().GetTagsForBlog(dbEntity.Id).map()
+                        {
+                            ObjectMapper.MapDatabaseToDomain(it) as DomainTag
+                        }
+                        val tagsToAdd = entity.Tags.subtract(currentTags)
+                        val tagsToRemove = currentTags.subtract(entity.Tags)
+
+                        // Remove the tags that are not in the new list of tags
+                        tagsToRemove.forEach { tag ->
+                            val dbTag = ObjectMapper.MapDomainToDatabase(tag) as DatabaseTag
+                            DataContext.TagDAO().Delete(dbTag)
+                        }
+
+                        // Add the new tags
+                        tagsToAdd.forEach { tag ->
+                            val dbTag = ObjectMapper.MapDomainToDatabase(tag) as DatabaseTag
+                            DataContext.TagDAO().Add(dbTag)
+                        }
+                    }.await()
+                } else {
+                    println("Entity with ID ${entity.Id} does not exist and cannot be updated.")
+                }
+            }
+        }
     }
-
-
-//    override suspend fun FindAllAsync(predicate: ((DomainBlog) -> Boolean)?,
-//                                      coroutineContext: CoroutineContext): List<DomainBlog>
-//    = coroutineScope {
-//        mapper = MapToDomain.build()
-//
-//        val blogs = async(Dispatchers.IO) { DataContext.BlogDAO().FindAll() }.await()
-//
-//        val result = if (predicate != null) {
-//            blogs.filter { predicate.invoke(mapper.map(it)) }
-//        } else { blogs }
-//
-//        mapper.map(result)
-//    }
-
-//    override suspend fun AddAsync(entity: DomainBlog, coroutineContext: CoroutineContext)
-//    {
-//        coroutineScope {
-//            launch(coroutineContext) {
-//                val dbEntity = ObjectMapper.MapDomainToDatabase(entity) as DatabaseBlog
-//                val check = async(Dispatchers.IO)
-//                {
-//                    Dao.Add(dbEntity)
-//                }.await()
-//                if (check != null)
-//                {
-//                    val hello = "added error"
-//                }
-//            }
-//        }
-//    }
-
-
 }

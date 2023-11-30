@@ -2,7 +2,7 @@ package totechs.socialnetwork.Infrastructure.DataProvider.RoomDatabaseProvider
 
 import androidx.room.Dao
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Transaction
 import totechs.socialnetwork.Core.Application.IDataAccessObjectBase
 import java.util.UUID
 
@@ -18,4 +18,8 @@ interface IBlogDAO : IDataAccessObjectBase<Blog, UUID>
 
     @Query("SELECT * FROM Blog WHERE id = :id LIMIT 1")
     fun FindById(id: UUID): Blog
+
+    @Transaction
+    @Query("SELECT * FROM Blog WHERE Id = :blogId")
+    suspend fun getBlogWithTags(blogId: UUID): BlogTags
 }

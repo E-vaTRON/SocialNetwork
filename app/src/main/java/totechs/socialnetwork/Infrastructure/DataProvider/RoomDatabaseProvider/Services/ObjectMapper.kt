@@ -23,22 +23,46 @@ class ObjectMapper : IObjectMapper
         }
     }
 
-    override fun MapDatabaseToDomain(entity: IDatabaseEntity): IDomainEntity
+    override fun MapDatabaseToDomain(dbentity: IDatabaseEntity): IDomainEntity
     {
-        return when (entity) {
-            is DatabaseBlog -> BlogMapToDomain.map<DatabaseBlog, DomainBlog>(entity) as IDomainEntity
-            is DatabaseTag -> TagMapToDomain.map<DatabaseTag, DomainTag>(entity) as IDomainEntity
+        if (dbentity is IDomainEntity)
+        {
+            throw IllegalArgumentException("Domain entities are not supported. Please pass Database entities.")
+        }
+        return when (dbentity) {
+            is DatabaseBlog -> BlogMapToDomain.map<DatabaseBlog, DomainBlog>(dbentity)
+            is DatabaseTag -> TagMapToDomain.map<DatabaseTag, DomainTag>(dbentity)
             else -> throw IllegalArgumentException("Unsupported entity type")
         }
     }
 
-    fun MapUUIDToString(TDbId: UUID): String
+    fun MapDatabaseToDomainWithInclude(dbentity: IDatabaseEntity, includeEntity: IDatabaseEntity): IDomainEntity
+    {
+        if (dbentity is IDomainEntity || includeEntity is IDomainEntity)
+        {
+            throw IllegalArgumentException("Domain entities are not supported. Please pass Database entities.")
+        }
+        return when (dbentity) {
+            is DatabaseBlog ->
+            {
+                var entity = BlogMapToDomain.map<DatabaseBlog, DomainBlog>(dbentity)
+                if (includeEntity is DatabaseTag)
+                    entity.Tags.add(MapDatabaseToDomain(includeEntity) as DomainTag)
+                else throw IllegalArgumentException("Included entity must be a Database Tag")
+                entity
+            }
+            is DatabaseTag -> TagMapToDomain.map<DatabaseTag, DomainTag>(dbentity)
+            else -> throw IllegalArgumentException("Unsupported entity type")
+        }
+    }
+
+    override fun MapUUIDToString(TDbId: UUID): String
     {
         val MapUUIDToString = mapperBuilder.withMapping<UUID, String>(){}.build()
         return MapUUIDToString.map(TDbId)
     }
 
-    fun MapStringToUUID(TId: String): UUID
+    override fun MapStringToUUID(TId: String): UUID
     {
         val MapUUIDToString = mapperBuilder.withMapping<String, UUID>(){}.build()
         return MapUUIDToString.map(TId)
